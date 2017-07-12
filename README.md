@@ -1,9 +1,9 @@
 # esiCancer
-Darlan Conterno Minussi
-Bernardo Henz <bernardohenz@gmail.com>
-Eduardo Cremonese Filippi-Chiela
-Manuel Menezes Oliveira
-Guido Lenz <lenz@ufrgs.br>
+Darlan Conterno Minussi, 
+Bernardo Henz,
+Eduardo Cremonese Filippi-Chiela,
+Manuel Menezes Oliveira,
+Guido Lenz
 
 Our current knowledge regarding tumor evolution has been obtained from what we can gather through biopsy samples. In spite of the importance of these samples to diagnosis and treatment, they represent only a glimpse of the whole tumor evolutionary path, whereas the majority of the tumor development remains hidden. In this work, we developed a software to simulate the clonal evolution of different types of tumors, focusing on the molecular mechanisms that lead to tumor progression. For this, we generate cells with two arrays that represent the diploid characteristic of the human genome and mutations can be inserted in the genome during division that may alter the default probabilities of proliferation and death. Using information from oncogenes and tumor suppressor genes mutated in a given tumor type, our model simulates the accumulation of mutations and the gradual chance in cell fitness over hundreds of cell generations. esiCancer reproduces essential characteristics of the tumor evolution such as the synergy between oncogenes and tumor suppressor genes, changes in mutation frequency with distinct fitness values and finally tumor treatment. Therefore, with the increasing knowledge in tumor biology, we believe that our model can offer a unique perspective of tumor evolution in a time-frame from non-mutated cells to early tumor growth, were very little is known about tumor biology. 
 
@@ -18,6 +18,7 @@ We provide two files with standard configurations. Put the *config.xml* file in 
 
 #### Parameters
 The parameters are described next:
+
 |   | **Parameter** | **Action** |
 | --- | --- | --- |
 |Essential parameters | Seed | Controls the pseudorandom number generator |
