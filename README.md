@@ -1,8 +1,9 @@
 # esiCancer
 Darlan Conterno Minussi, 
 Bernardo Henz,
-Eduardo Cremonese Filippi-Chiela,
-Manuel Menezes Oliveira,
+Mariana dos Santos Oliveira,
+Eduardo C. Filippi-Chiela,
+Manuel M. Oliveira,
 Guido Lenz
 
 ### What is esiCancer?
