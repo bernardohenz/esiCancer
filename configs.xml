@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<esiCancer>
+	<default_values>
+		<number_of_cells>1000</number_of_cells>
+		<prob_prol>0.01</prob_prol>
+		<prob_death>0.01</prob_death>
+		<max_divisions>30</max_divisions>
+		<muts_per_division>50</muts_per_division>
+	</default_values>
+	<stop_conditions>
+		<num_of_generations>1101</num_of_generations>
+		<stop_num_of_cells>10000</stop_num_of_cells>
+		<stop_mutated_cells>-1</stop_mutated_cells>
+	</stop_conditions>
+	<max_values>
+		<muts_per_division>20000</muts_per_division>
+		<prob_prol>1</prob_prol>
+		<prob_death>1</prob_death>
+	</max_values>
+</esiCancer>
