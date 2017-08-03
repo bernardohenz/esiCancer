@@ -7,7 +7,11 @@ Manuel M. Oliveira,
 Guido Lenz
 
 ### What is esiCancer?
-Knowledge about cancer biology and its consequent evolution is mainly inferred from tissue sampled at very limited time points, thus only representing a glimpse of the complete tumor evolutionary path. In this work, we developed a software to simulate the initial steps of cancer evolution. Our model randomly applies mutations to a real oncogenome of a subset of diploid cells, thus altering their probabilities of proliferation and death. Accumulation of mutations over hundreds of generations leads to a gradual change in cell fitness and establishment of a fast growing population. esiCancer reproduces essential stochastic characteristics of the evolution process and provides a tool to predict the impact on fitness of oncogenes and tumor suppressor genes. It also predicts the impact that mutation rate, fitness levels, and mono or bi-allelic changes in specific genes have on Kaplan-Meier-like curves. Thus, esiCancer offers a unique and realistic model for the initial tumor evolution process. 
+esiCancer is a cell-autonomous software tool to model early evolution of cancer. This program uses real genomic information of tumors to construct a biallelic genome and applies stochastic mutations to this genome. Mutations can produce several alterations to the probability of proliferation, death, mutation rate, and maximal divisions of the cells containing mutation in one allele of oncogenes or two alleles of tumor suppressor genes (TSGs).
+
+esiCancer has a user friendly interface and produces .cvs outputs that can be easily analyzed by computer professionals or amateurs alike. We will also make the code freely available for the community to modify and extend it. 
+
+
 
 
 ### Compiling the code
