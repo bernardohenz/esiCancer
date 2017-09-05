@@ -9,13 +9,13 @@ Guido Lenz
 ### What is esiCancer?
 esiCancer is a cell-autonomous software tool to model early evolution of cancer. This program uses real genomic information of tumors to construct a biallelic genome and applies stochastic mutations to this genome. Mutations can produce several alterations to the probability of proliferation, death, mutation rate, and maximal divisions of the cells containing mutation in one allele of oncogenes or two alleles of tumor suppressor genes (TSGs).
 
-esiCancer has a user friendly interface and produces .cvs outputs that can be easily analyzed by computer professionals or amateurs alike. We will also make the code freely available for the community to modify and extend it. 
+esiCancer has a user friendly interface and produces .cvs outputs that can be easily analyzed by computer professionals or amateurs alike.
 
 
 
 
 ### Compiling the code
-Source code is written in C++, using Qt library for interface design. We strongly recommend the use of QtCreator, as we provide the .pro project file. We suggest using GCC or MinGW as compiler, but any other should work just fine. Any problem compiling the code, please let me know.
+Source code is written in C++, using Qt library for interface design. For compiling the code you will need to: (1) having a compiler installed (we suggest GCC or MinGW, but any compiler should work fine); (2) having the QT library, which can be download on [QT website](https://www.qt.io/download/). We strongly recommend the use of QtCreator (installed with QT), as we provide the .pro project file. Any problem compiling the code, please let me know.
 
 
 ### Start simulating clonal evolution
