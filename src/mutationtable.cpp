@@ -127,9 +127,9 @@ void MutationTable::loadMutations(QString fileName)
             tmpMutation->mName = tmpstringList[id_name].toStdString();
         }
         if(id_mutation_type>0){
-            if ((tmpstringList[id_mutation_type]=="onc")||(tmpstringList[id_mutation_type]=="oncogene")||(tmpstringList[id_mutation_type]=="normr"))
+            if ((tmpstringList[id_mutation_type]=="onc")||(tmpstringList[id_mutation_type]=="oncogene")||(tmpstringList[id_mutation_type]=="normd"))
                 tmpMutation->mType = MutationType::ONCOGENE;
-            else if ((tmpstringList[id_mutation_type]=="tsg")||(tmpstringList[id_mutation_type]=="tumor_suppressor_gene")||(tmpstringList[id_mutation_type]=="normd"))
+            else if ((tmpstringList[id_mutation_type]=="tsg")||(tmpstringList[id_mutation_type]=="tumor_suppressor_gene")||(tmpstringList[id_mutation_type]=="normr"))
                 tmpMutation->mType = MutationType::TUMORSUPPRESSOR;
         }
         if(id_oncogenic_size>0){
