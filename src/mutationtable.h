@@ -5,13 +5,13 @@
 #include <string>
 #include <QString>
 #include <algorithm>
+#include <QDebug>
 
 
-
-enum MutationType{
-    ONCOGENE,
-    TUMORSUPPRESSOR,
-    NOMUTATION
+enum ModifierType{
+    ADD,
+    MULT,
+    NONE
 };
 
 template <typename T>
@@ -23,81 +23,149 @@ const bool Contains( std::vector<T>& Vec, const T& Element )
     return false;
 }
 
-class Mutation{
+class MutationGene{
+public:
+   static int numberOfMutationGenes;
+   std::string mName;
+   int mId;
+   MutationGene(){
+        mId = numberOfMutationGenes;
+        numberOfMutationGenes++;
+   }
+   MutationGene(std::string tname){
+       mName = tname;
+       mId = numberOfMutationGenes;
+       numberOfMutationGenes++;
+   }
+};
+
+class MutationEvent{
 public:
 
-   float prolRateMultBeforeSuppressor;
-   float prolRateMultAfterSuppressor;
-   float prolRateAddBeforeSuppressor;
-   float prolRateAddAfterSuppressor;
+   ModifierType prolModifierType;
+   float prolRate;
 
-   float deathRateMultBeforeSuppressor;
-   float deathRateMultAfterSuppressor;
-   float deathRateAddBeforeSuppressor;
-   float deathRateAddAfterSuppressor;
+   ModifierType deathModifierType;
+   float deathRate;
 
-   float moreMutRateMultMutations;
-   float moreMutRateAddMutations;
+   ModifierType moreMutModifierType;
+   float moreMutRateMutations;
 
-   float telomeresRateMultBeforeSuppressor;
-   float telomeresRateMultAfterSuppressor;
-   float telomeresRateAddBeforeSuppressor;
-   float telomeresRateAddAfterSuppressor;
+   ModifierType telomeresModifierType;
+   float telomeresRate;
 
-   float synergy;
+   float dominance; //if 0, it's oncogene;  if 1, it's TSG
+   float microEnvironment;
 
-   MutationType mType;
    std::string mName;
    unsigned int oncogenic_size;
+   std::vector<float> sinergyProlValues; //key are before mutation events
+   std::vector<float> sinergyDeathValues;
+   std::vector<float> sinergyTelValues;
+   std::vector<unsigned int> listOfChainReactionlMutationEvents;
+   MutationGene *mMutationGene;
 
    //Initializing with default values
-   Mutation(){
-       prolRateMultBeforeSuppressor=1;
-       prolRateMultAfterSuppressor=1;
-       prolRateAddBeforeSuppressor=0;
-       prolRateAddAfterSuppressor=0;
-       deathRateMultBeforeSuppressor=1;
-       deathRateMultAfterSuppressor=1;
-       deathRateAddBeforeSuppressor=0;
-       deathRateAddAfterSuppressor=0;
-       moreMutRateMultMutations=1;
-       moreMutRateAddMutations=0;
-       telomeresRateMultBeforeSuppressor=1;
-       telomeresRateMultAfterSuppressor=1;
-       telomeresRateAddBeforeSuppressor=0;
-       telomeresRateAddAfterSuppressor=0;
-       synergy=1;
+   MutationEvent(){
+       prolModifierType = ModifierType::MULT;
+       prolRate=1;
+
+       deathModifierType = ModifierType::MULT;
+       deathRate=1;
+
+       moreMutModifierType = ModifierType::MULT;
+       moreMutRateMutations=1;
+
+       telomeresModifierType = ModifierType::MULT;
+       telomeresRate=1;
+
+       dominance = 0;
+       microEnvironment = 1;
+
        oncogenic_size=0;
        mName="";
-       mType=MutationType::NOMUTATION;
+       sinergyProlValues = std::vector<float>();
+       sinergyDeathValues = std::vector<float>();
+       sinergyTelValues = std::vector<float>();
+       listOfChainReactionlMutationEvents = std::vector<unsigned int>();
+       mMutationGene = NULL;
    }
+
+   void resetSinergyVector(unsigned int numberOfTotalEvents){
+       sinergyProlValues.clear();
+       sinergyDeathValues.clear();
+       sinergyTelValues.clear();
+       sinergyProlValues = std::vector<float>(numberOfTotalEvents,1);
+       sinergyDeathValues = std::vector<float>(numberOfTotalEvents,1);
+       sinergyTelValues = std::vector<float>(numberOfTotalEvents,1);
+   }
+
+   void resetChainReactionVector(){
+       listOfChainReactionlMutationEvents.clear();
+   }
+
+
+   void setSinergyValue(unsigned int tBeforeMutEvent, float tProlSinergy, float tDeathSinergy, float tTelSinergy){
+       if (tBeforeMutEvent<sinergyProlValues.size()){
+           sinergyProlValues[tBeforeMutEvent] = tProlSinergy;
+           sinergyDeathValues[tBeforeMutEvent] = tDeathSinergy;
+           sinergyTelValues[tBeforeMutEvent] = tTelSinergy;
+       }
+   }
+   void addChainReactionMutationEvent(unsigned int tAfterMutEvent){
+       listOfChainReactionlMutationEvents.push_back(tAfterMutEvent);
+   }
+
+
+   float computeProlSinergyModifier(std::vector<unsigned int> listOfMutations);
+   float computeProlSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape);
+   float computeDeathSinergyModifier(std::vector<unsigned int> listOfMutations);
+   float computeDeathSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape);
+   float computeTelSinergyModifier(std::vector<unsigned int> listOfMutations);
+   float computeTelSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape);
+   float computeNewProlRate(float celProlRate, float sinergyModifier, int activationLevel);
+   float computeNewDeathRate(float celDeathRate, float sinergyModifier,int activationLevel);
+   float computeNewMoreMutRate(float celMoreMutRate, float sinergyModifier);
+   float computeNewTelomeresRate(float celTelomeresRate, float sinergyModifier, int activationLevel);
+   float computeNewMicroEnvironmentModifier(float curMicroEnvironment, int activationLevel);
+
 };
 
 class MutationTable
 {
 private:
-    std::vector<Mutation *> mMutations;
+    std::vector<MutationEvent *> mMutationEvents;
+    std::vector<MutationGene *> mMutationGenes;
 
     //Classification
     unsigned int total_oncogenic_size;
-    unsigned int maxIdMutation;
+    unsigned int maxIdMutationEvent;
+    unsigned int maxIdMutationGene;
     std::vector<int> oncogenic_tape;
+    std::vector<int> oncogenic_tape_genes;
     int genome_size;
 public:
     MutationTable();
     void loadMutations(QString fileName);
+    void loadSinergyPairs(QString fileName);
+    int getMutGeneIdFromName(std::string tname);
+    int getEventIdFromFullName(std::string tGeneName, std::string tEventName);
 
-    unsigned int getMaxIdMutation(){ return maxIdMutation; }
-    int getNumberofMutation(unsigned int tbasis);
-    MutationType getTypeOfMutationGivenAMutation(int tmut);
-    Mutation *getMutation(int tid) const;
+    unsigned int getMaxIdMutationEvent(){ return maxIdMutationEvent; }
+    unsigned int getMaxIdMutationGene(){ return maxIdMutationGene; }
+    int getNumberofMutationEvent(unsigned int tbasis);
+    int getNumberOfMutationGene(unsigned int tbasis);
+    MutationGene *getMutationGene(int tid) const;
+    MutationEvent *getMutationEvent(int tid) const;
     int getGenomeSize() const {return genome_size;}
     QStringList getMutationListNames();
+    QStringList getMutationGenesListNames();
+    int getGeneOfEvent(int teventId);
 
-    bool checkIfAddMutation(int tmpMutationId,std::vector<unsigned int> newFirstTapeMutations,std::vector<unsigned int> newSecondTapeMutations,unsigned int tapeChosen);
-    bool checkIfAddMutationByReference(int tmpMutationId,std::vector<unsigned int> &newFirstTapeMutations,std::vector<unsigned int> &newSecondTapeMutations,unsigned int tapeChosen);
-    bool checkIfAddMutationArrayOfBool(int tmpMutationId,std::vector<bool> newFirstTapeMutations,std::vector<bool> newSecondTapeMutations,unsigned int tapeChosen);
-    float getSynergyOfMutation(int tmpMutationId);
+    //bool checkIfAddMutation(int tmpMutationId,std::vector<unsigned int> newFirstTapeMutations,std::vector<unsigned int> newSecondTapeMutations,unsigned int tapeChosen);
+    int checkIfAddMutationByReference(int tmpMutationId,std::vector<unsigned int> &newFirstTapeMutations,std::vector<unsigned int> &newSecondTapeMutations,unsigned int tapeChosen); //0=noActivation 1=partialActivation 2=fullActivation
+    //bool checkIfAddMutationArrayOfBool(int tmpMutationId,std::vector<bool> newFirstTapeMutations,std::vector<bool> newSecondTapeMutations,unsigned int tapeChosen);
+
 };
 
 #endif // MUTATIONTABLE_H

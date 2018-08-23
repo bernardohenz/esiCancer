@@ -1,6 +1,7 @@
 #ifndef MUTATIONCOUNTER_H
 #define MUTATIONCOUNTER_H
 #include <vector>
+#include <QDebug>
 
 class MutationCounter{
 private:
@@ -17,6 +18,9 @@ public:
             vMutations[i] = 0;
     }
     void incrementMutCounter(unsigned int tmut) {
+        if (tmut>=vMutations.size()){
+            return;
+        }
         vMutations[tmut]++;
     }
 

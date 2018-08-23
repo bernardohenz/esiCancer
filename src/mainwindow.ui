@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
-    <height>593</height>
+    <width>910</width>
+    <height>605</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,99 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QFrame" name="frame_2">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_6">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Simulation Parameters</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Seed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="seedSpin">
+         <property name="maximum">
+          <number>9999</number>
+         </property>
+         <property name="value">
+          <number>13</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Number of Cells</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="numberOfCellsSpin">
+         <property name="maximum">
+          <number>99999999</number>
+         </property>
+         <property name="singleStep">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>1000</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QPushButton" name="startSimulationButton">
+         <property name="text">
+          <string>Start Simulation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="QPushButton" name="forceStopButton">
+         <property name="text">
+          <string>Force Stop</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="0" column="1">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
@@ -44,7 +137,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Prob of Proliferation</string>
+          <string>Prob of Division</string>
          </property>
         </widget>
        </item>
@@ -111,14 +204,14 @@
        <item row="4" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Mutations Per Division</string>
+          <string>Events Per Division</string>
          </property>
         </widget>
        </item>
        <item row="6" column="0" colspan="2">
         <widget class="QPushButton" name="LoadTableButton">
          <property name="text">
-          <string>Load Mutation Table</string>
+          <string>Load esiTable</string>
          </property>
         </widget>
        </item>
@@ -134,6 +227,16 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QPushButton" name="LoadSinergyButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Load Interaction Table</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -173,6 +276,12 @@
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="comboBoxParameterToIterate">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="frame">
+          <bool>true</bool>
+         </property>
          <item>
           <property name="text">
            <string>Seed</string>
@@ -296,107 +405,7 @@
       </layout>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QFrame" name="frame_2">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QFormLayout" name="formLayout_2">
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="label_6">
-         <property name="font">
-          <font>
-           <pointsize>9</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Simulation Parameters</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Seed</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QSpinBox" name="seedSpin">
-         <property name="maximum">
-          <number>9999</number>
-         </property>
-         <property name="value">
-          <number>13</number>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>Number of Cells</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="numberOfCellsSpin">
-         <property name="maximum">
-          <number>99999999</number>
-         </property>
-         <property name="singleStep">
-          <number>100</number>
-         </property>
-         <property name="value">
-          <number>1000</number>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="QPushButton" name="startSimulationButton">
-         <property name="text">
-          <string>Start Simulation</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QPushButton" name="forceStopButton">
-         <property name="text">
-          <string>Force Stop</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="2">
-        <widget class="QLabel" name="start_simulation_label_finished">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
+    <item row="1" column="0" rowspan="2" colspan="2">
      <widget class="QFrame" name="frame_ManualMutations">
       <property name="enabled">
        <bool>false</bool>
@@ -418,7 +427,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Manual Mutations</string>
+          <string>Manual Events</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -439,7 +448,7 @@
          </column>
          <column>
           <property name="text">
-           <string>Mutation Name</string>
+           <string>Gene-Event Name</string>
           </property>
          </column>
          <column>
@@ -534,7 +543,7 @@
           <number>99999</number>
          </property>
          <property name="value">
-          <number>30</number>
+          <number>1101</number>
          </property>
         </widget>
        </item>
@@ -554,14 +563,14 @@
           <number>999999999</number>
          </property>
          <property name="value">
-          <number>3000000</number>
+          <number>10000</number>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_11">
          <property name="text">
-          <string>Mutated Cells  (-1 for infinite)</string>
+          <string>Affected Cells  (-1 for infinite)</string>
          </property>
         </widget>
        </item>
@@ -581,6 +590,68 @@
       </layout>
      </widget>
     </item>
+    <item row="2" column="2">
+     <widget class="QFrame" name="frame_5">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QFormLayout" name="formLayout_5">
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_21">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Tumor Environment</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="stdGrowthRateCheckBox">
+         <property name="text">
+          <string>Enable</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="stdGrowthRateLabel">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Maximal Tumor Growth Rate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="stdGrowthRateSpin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="decimals">
+          <number>4</number>
+         </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+         <property name="value">
+          <double>2.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -588,8 +659,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>689</width>
-     <height>21</height>
+     <width>910</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>

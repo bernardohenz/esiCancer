@@ -1,7 +1,7 @@
 #ifndef MUTATIONHISTOGRAM_H
 #define MUTATIONHISTOGRAM_H
 #include <vector>
-
+#include <QDebug>
 
 class MutationHistogram
 {
@@ -13,12 +13,12 @@ public:
         vBins = std::vector<unsigned int>();
     }
     MutationHistogram(unsigned int tnumberOfBins){
-        vBins = std::vector<unsigned int>(tnumberOfBins,0);
+        vBins = std::vector<unsigned int>(tnumberOfBins+1,0);
     }
 
     void initialize(unsigned int tnumberOfBins){
         vBins.clear();
-        vBins = std::vector<unsigned int>(tnumberOfBins,0);
+        vBins = std::vector<unsigned int>(tnumberOfBins+1,0);
     }
 
     void resetBins(){
@@ -27,6 +27,10 @@ public:
     }
 
     void incrementBin(unsigned int tbin) {
+        if (tbin>=vBins.size()){
+            qDebug()<<"This shoudn't be happening";
+            return;
+        }
         vBins[tbin]++;
     }
 

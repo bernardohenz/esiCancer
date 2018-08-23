@@ -16,10 +16,10 @@ class DialogManualMutation : public QDialog
 public:
     explicit DialogManualMutation(QWidget *parent, QStringList tList);
 
-    void setValues(int generation, int percentage, int selectedIndex, manualMutationAllelsChanged tAllelsChanged);
+    void setValues(int generation, int percentage, int selectedIndexEvent, manualMutationAllelsChanged tAllelsChanged);
     int getGeneration();
     int getPercentage();
-    QString getMutationName();
+    QString getMutationFullName();
     int getIndex();
     manualMutationAllelsChanged getAllelsChanged();
 

@@ -1,4 +1,6 @@
 #include "mutationmanual.h"
+#include <QStringList>
+#include <QDebug>
 
 unsigned int MutationManual::getGeneration() const
 {
@@ -20,25 +22,35 @@ void MutationManual::setPercentage(float value)
     percentage = value;
 }
 
-unsigned int MutationManual::getMutationId() const
+unsigned int MutationManual::getMutationEventId() const
 {
-    return mutationId;
+    return mutationEventId;
 }
 
-void MutationManual::setMutationId(unsigned int value)
+void MutationManual::setMutationEventId(int tvalue)
 {
-    mutationId = value;
+    mutationEventId = tvalue;
 }
 
-QString MutationManual::getMutationName() const
+void MutationManual::setMutationFullName(QString tmutationFullName)
 {
-    return mutationName;
+    mutationGeneName = tmutationFullName.split('-')[0];
+    mutationEventName = tmutationFullName.split('-')[1];
 }
 
-void MutationManual::setMutationName(const QString &value)
+
+
+QString MutationManual::getMutationEventName() const
 {
-    mutationName = value;
+    return mutationEventName;
 }
+
+
+QString MutationManual::getMutationGeneName() const
+{
+    return mutationGeneName;
+}
+
 
 manualMutationAllelsChanged MutationManual::getMutationAllelsChanged() const
 {
@@ -50,11 +62,14 @@ void MutationManual::setMutationAllelsChanged(const manualMutationAllelsChanged 
     mutationAllelsChanged = value;
 }
 
-MutationManual::MutationManual(unsigned int tgeneration, float tpercentage, unsigned int tmutationId, QString tmutationName,manualMutationAllelsChanged tmutationAllelsChanged)
+MutationManual::MutationManual(unsigned int tgeneration, float tpercentage, unsigned int tmutationEventId, QString tmutationFullName, manualMutationAllelsChanged tmutationAllelsChanged)
 {
     generation = tgeneration;
     percentage = tpercentage;
-    mutationId = tmutationId;
-    mutationName = tmutationName;
+    mutationEventId = tmutationEventId;
+    mutationGeneName = tmutationFullName.split('-')[0];
+    mutationEventName = tmutationFullName.split('-')[1];
+    mutationFullName = tmutationFullName;
     mutationAllelsChanged = tmutationAllelsChanged;
+    qDebug()<<"Created: "<<mutationGeneName<<"     event: "<<mutationEventName;
 }

@@ -11,17 +11,17 @@ DialogManualMutation::DialogManualMutation(QWidget *parent, QStringList tList) :
     connect(ui->buttonReject,SIGNAL(pressed()),this,SLOT(reject()));
     QStringList mutationNames = tList;
     for (int i=0; i<mutationNames.size(); i++){
-        ui->comboBoxMutationName->addItem(mutationNames.at(i));
+        ui->comboBoxMutationFullName->addItem(mutationNames.at(i));
     }
 
     ui->buttonAccept->setFocus();
 }
 
-void DialogManualMutation::setValues(int generation, int percentage, int selectedIndex,manualMutationAllelsChanged tAllelsChanged)
+void DialogManualMutation::setValues(int generation, int percentage, int selectedIndexEvent ,manualMutationAllelsChanged tAllelsChanged)
 {
     ui->spinMutationGeneration->setValue(generation);
     ui->spinMutationPercentage->setValue(percentage);
-    ui->comboBoxMutationName->setCurrentIndex(selectedIndex);
+    ui->comboBoxMutationFullName->setCurrentIndex(selectedIndexEvent);
     if(tAllelsChanged==MONOALLELIC)
         ui->comboBoxAllelsChanged->setCurrentIndex(0);
     else
@@ -38,14 +38,15 @@ int DialogManualMutation::getPercentage()
     return ui->spinMutationPercentage->value();
 }
 
-QString DialogManualMutation::getMutationName()
+QString DialogManualMutation::getMutationFullName()
 {
-    return ui->comboBoxMutationName->currentText();
+    return ui->comboBoxMutationFullName->currentText();
 }
+
 
 int DialogManualMutation::getIndex()
 {
-    return ui->comboBoxMutationName->currentIndex();
+    return ui->comboBoxMutationFullName->currentIndex();
 }
 
 manualMutationAllelsChanged DialogManualMutation::getAllelsChanged()

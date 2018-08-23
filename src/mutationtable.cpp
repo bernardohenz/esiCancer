@@ -3,20 +3,27 @@
 #include <QTextStream>
 #include <QDebug>
 
+int MutationGene::numberOfMutationGenes=0;
 
 MutationTable::MutationTable()
 {
     genome_size = 4568;
-    maxIdMutation=0;
+    maxIdMutationEvent=0;
+    maxIdMutationGene=0;
     total_oncogenic_size=0;
 }
 
 void MutationTable::loadMutations(QString fileName)
 {
-    if (mMutations.size()>0){
-        mMutations.clear();
-        maxIdMutation = 0;
+    if (mMutationEvents.size()>0){
+        mMutationEvents.clear();
+        maxIdMutationEvent = 0;
         total_oncogenic_size=0;
+    }
+    if(mMutationGenes.size()>0){
+        MutationGene::numberOfMutationGenes=0;
+        mMutationGenes.clear();
+        maxIdMutationGene = 0;
     }
     QFile fileTable(fileName);
     if(!(fileTable.open(QIODevice::ReadOnly))){
@@ -24,17 +31,17 @@ void MutationTable::loadMutations(QString fileName)
         return;
     }
     QTextStream fileTextStream(&fileTable);
-    QString tmpTxt, tmpTxtId;
+    QString tmpTxt, tmpTxtMut;
     QStringList tmpstringList;
     bool flag_first_line_read = false;
-    unsigned int id_name = 0;
-    unsigned int id_proliferate_without_sup=0, id_proliferate_with_sup=0,id_proliferate_func=0;
-    unsigned int id_die_without_sup=0, id_die_with_sup=0, id_death_func=0;
+    unsigned int id_gene_name = 0, id_event_name = 0;
+    unsigned int id_proliferate_rate=0,id_proliferate_func=0;
+    unsigned int id_death_rate=0, id_death_func=0;
     unsigned int id_mut=0, id_mut_func=0;
     unsigned int id_oncogenic_size,id_genome_size=0;
-    unsigned int id_mutation_type=0,id_telomeres_without_sup=0,id_telomeres_with_sup=0,id_telomeres_func=0;
+    unsigned int id_telomeres_rate=0,id_telomeres_func=0;
     //unsigned int id_prolOnTreat,id_deathOnTreat;
-    unsigned int id_synergy;
+    unsigned int id_dominance=0,id_micro_environment=0,id_synergy;
 
     while (true) {
         if (fileTextStream.atEnd()){
@@ -44,36 +51,34 @@ void MutationTable::loadMutations(QString fileName)
         tmpstringList = tmpTxt.replace(',',';').split(';');
         if (tmpstringList[0] == "basic"){
             for(int i=1; i<tmpstringList.size(); i++){
-                if ((tmpstringList[i]=="gene name")||(tmpstringList[i]=="gene"))
-                    id_name=i;
-                else if (tmpstringList[i]=="prowotsg")
-                    id_proliferate_without_sup=i;
-                else if(tmpstringList[i]=="prowitsg")
-                    id_proliferate_with_sup=i;
-                else if(tmpstringList[i]=="profunc")
+                if ((tmpstringList[i]=="gene name")||(tmpstringList[i]=="genes"))
+                    id_gene_name=i;
+                else if (tmpstringList[i]=="events")
+                    id_event_name=i;
+                else if ((tmpstringList[i]=="prorate")||(tmpstringList[i]=="divrate"))
+                    id_proliferate_rate=i;
+                else if ((tmpstringList[i]=="profunc")||(tmpstringList[i]=="divfunc"))
                     id_proliferate_func=i;
                 else if(tmpstringList[i]=="synergy")
                     id_synergy=i;
-                else if(tmpstringList[i]=="dewotsg")
-                    id_die_without_sup=i;
-                else if(tmpstringList[i]=="dewitsg")
-                    id_die_with_sup=i;
+                else if(tmpstringList[i]=="deathrate")
+                    id_death_rate=i;
                 else if(tmpstringList[i]=="defunc")
                     id_death_func=i;
                 else if(tmpstringList[i]=="mutfunc")
                     id_mut_func=i;
                 else if(tmpstringList[i]=="mut")
                     id_mut=i;
-                else if(tmpstringList[i]=="telfunc")
+                else if((tmpstringList[i]=="telfunc")||(tmpstringList[i]=="maxdivfunc"))
                     id_telomeres_func=i;
-                else if(tmpstringList[i]=="telwotsg")
-                    id_telomeres_without_sup=i;
-                else if(tmpstringList[i]=="telwitsg")
-                    id_telomeres_with_sup=i;
-                else if(tmpstringList[i]=="type")
-                    id_mutation_type=i;
-                else if(tmpstringList[i]=="oncbase")
+                else if((tmpstringList[i]=="telrate")||(tmpstringList[i]=="maxdivrate"))
+                    id_telomeres_rate=i;
+                else if((tmpstringList[i]=="oncbase")||(tmpstringList[i]=="oncevents")||(tmpstringList[i]=="probevent"))
                     id_oncogenic_size=i;
+                else if(tmpstringList[i]=="dominance")
+                    id_dominance=i;
+                else if(tmpstringList[i]=="microenvironment")
+                    id_micro_environment=i;
                 else if(tmpstringList[i]=="genome size")
                     id_genome_size=i;
             }
@@ -85,111 +90,259 @@ void MutationTable::loadMutations(QString fileName)
             }
             flag_first_line_read = true;
         }
-        Mutation *tmpMutation = new Mutation();
+        MutationEvent *tmpMutationEvent = new MutationEvent();
         if(id_proliferate_func>0){
-            if (tmpstringList[id_proliferate_func] == "mult") {
-                tmpMutation->prolRateMultBeforeSuppressor = tmpstringList[id_proliferate_without_sup].toFloat();
-                tmpMutation->prolRateMultAfterSuppressor = tmpstringList[id_proliferate_with_sup].toFloat();
-            } else if (tmpstringList[id_proliferate_func] == "add"){
-                tmpMutation->prolRateAddBeforeSuppressor = tmpstringList[id_proliferate_without_sup].toFloat();
-                tmpMutation->prolRateAddAfterSuppressor = tmpstringList[id_proliferate_with_sup].toFloat();
-            }
+            if (tmpstringList[id_proliferate_func] == "mult")
+                tmpMutationEvent->prolModifierType = ModifierType::MULT;
+            else if (tmpstringList[id_proliferate_func] == "add")
+                tmpMutationEvent->prolModifierType = ModifierType::ADD;
+            tmpMutationEvent->prolRate = tmpstringList[id_proliferate_rate].toFloat();
         }
-        if(id_synergy>0)
-            tmpMutation->synergy = tmpstringList[id_synergy].toFloat();
 
         if(id_death_func>0){
-            if (tmpstringList[id_death_func] == "mult") {
-                tmpMutation->deathRateMultBeforeSuppressor = tmpstringList[id_die_without_sup].toFloat();
-                tmpMutation->deathRateMultAfterSuppressor = tmpstringList[id_die_with_sup].toFloat();
-            } else if (tmpstringList[id_death_func] == "add"){
-                tmpMutation->deathRateAddBeforeSuppressor = tmpstringList[id_die_without_sup].toFloat();
-                tmpMutation->deathRateAddAfterSuppressor = tmpstringList[id_die_with_sup].toFloat();
-            }
+            if (tmpstringList[id_death_func] == "mult")
+                tmpMutationEvent->deathModifierType = ModifierType::MULT;
+            else if (tmpstringList[id_death_func] == "add")
+                tmpMutationEvent->deathModifierType = ModifierType::ADD;
+            tmpMutationEvent->deathRate = tmpstringList[id_death_rate].toFloat();
         }
         if(id_mut>0){
             if(tmpstringList[id_mut_func]=="mult")
-                tmpMutation->moreMutRateMultMutations = tmpstringList[id_mut].toFloat();
+                tmpMutationEvent->moreMutModifierType = ModifierType::MULT;
             else if (tmpstringList[id_mut_func]=="add")
-                tmpMutation->moreMutRateAddMutations = tmpstringList[id_mut].toFloat();
+                tmpMutationEvent->moreMutModifierType = ModifierType::ADD;
+            tmpMutationEvent->moreMutRateMutations = tmpstringList[id_mut].toFloat();
         }
 
         if(id_telomeres_func>0){
-            if(tmpstringList[id_telomeres_func]=="mult"){
-                tmpMutation->telomeresRateMultBeforeSuppressor = tmpstringList[id_telomeres_without_sup].toFloat();
-                tmpMutation->telomeresRateMultAfterSuppressor = tmpstringList[id_telomeres_with_sup].toFloat();
-            } else if(tmpstringList[id_telomeres_func]=="add"){
-                tmpMutation->telomeresRateAddBeforeSuppressor = tmpstringList[id_telomeres_without_sup].toFloat();
-                tmpMutation->telomeresRateAddAfterSuppressor = tmpstringList[id_telomeres_with_sup].toFloat();
+            if(tmpstringList[id_telomeres_func]=="mult")
+                tmpMutationEvent->telomeresModifierType = ModifierType::MULT;
+            else if (tmpstringList[id_telomeres_func]=="add")
+                tmpMutationEvent->telomeresModifierType = ModifierType::ADD;
+            tmpMutationEvent->telomeresRate = tmpstringList[id_telomeres_rate].toFloat();
+        }
+        if(id_gene_name>0){
+            tmpTxtMut = tmpstringList[id_gene_name];
+            bool tmpExistGene = false;
+            unsigned int tmpIndex = 0;
+            for (unsigned int i=0; i<mMutationGenes.size();i++){
+                if (mMutationGenes[i]->mName == tmpTxtMut.toStdString()){
+                    tmpExistGene=true;
+                    tmpIndex=i;
+                    break;
+                }
+            }
+            if(tmpExistGene){
+                tmpMutationEvent->mMutationGene = mMutationGenes[tmpIndex];
+            }
+            else{
+                MutationGene *tmpMutationGene = new MutationGene(tmpTxtMut.toStdString());
+                tmpMutationEvent->mMutationGene = tmpMutationGene;
+                mMutationGenes.push_back(tmpMutationGene);
+                maxIdMutationGene++;
             }
         }
-        if(id_name>0){
-            tmpMutation->mName = tmpstringList[id_name].toStdString();
+        if(id_event_name>0){
+            tmpMutationEvent->mName = tmpstringList[id_event_name].toStdString();
         }
-        if(id_mutation_type>0){
-            if ((tmpstringList[id_mutation_type]=="onc")||(tmpstringList[id_mutation_type]=="oncogene")||(tmpstringList[id_mutation_type]=="normd"))
-                tmpMutation->mType = MutationType::ONCOGENE;
-            else if ((tmpstringList[id_mutation_type]=="tsg")||(tmpstringList[id_mutation_type]=="tumor_suppressor_gene")||(tmpstringList[id_mutation_type]=="normr"))
-                tmpMutation->mType = MutationType::TUMORSUPPRESSOR;
-        }
-        if(id_oncogenic_size>0){
 
-            tmpMutation->oncogenic_size = tmpstringList[id_oncogenic_size].toFloat();
+        if(id_dominance>0){
+            tmpMutationEvent->dominance = tmpstringList[id_dominance].toFloat();
         }
-        total_oncogenic_size += tmpMutation->oncogenic_size;
-        maxIdMutation++;
-        mMutations.push_back(tmpMutation);
+
+        if(id_micro_environment>0){
+            tmpMutationEvent->microEnvironment = tmpstringList[id_micro_environment].toFloat();
+        }
+
+        if(id_oncogenic_size>0){
+            tmpMutationEvent->oncogenic_size = tmpstringList[id_oncogenic_size].toFloat();
+        }
+        total_oncogenic_size += tmpMutationEvent->oncogenic_size;
+        maxIdMutationEvent++;
+        mMutationEvents.push_back(tmpMutationEvent);
     }
     fileTable.close();
     //initialize oncogenic tape
     oncogenic_tape = std::vector<int>(total_oncogenic_size,0);
+    oncogenic_tape_genes = std::vector<int>(total_oncogenic_size,0);
     int tmpcounter=0;
-    for (unsigned int i=0;i<mMutations.size();i++){
-        for(unsigned int j=0;j<mMutations[i]->oncogenic_size;j++)
+    for (unsigned int i=0;i<mMutationEvents.size();i++){
+        for(unsigned int j=0;j<mMutationEvents[i]->oncogenic_size;j++){
             oncogenic_tape[tmpcounter+j] = i;
-        tmpcounter+=mMutations[i]->oncogenic_size;
+            oncogenic_tape_genes[tmpcounter+j] = mMutationEvents[i]->mMutationGene->mId;
+        }
+        tmpcounter+=mMutationEvents[i]->oncogenic_size;
         //qDebug()<<mMutations[i]->oncogenic_size<<": ";
     }
+
+    //Resetting sinergy vectors
+    for (unsigned int i=0;i<mMutationEvents.size();i++){
+        mMutationEvents[i]->resetSinergyVector(maxIdMutationEvent);
+    }
+
+    qDebug()<<"Number of mutations: "<<mMutationEvents.size();
     qDebug()<<"genome: "<<genome_size;
     qDebug()<<"oncogenic_size: "<<total_oncogenic_size;
-    for (unsigned int i=0;i<total_oncogenic_size;i++)
-        qDebug()<<oncogenic_tape[i];
+    //for (unsigned int i=0;i<total_oncogenic_size;i++)
+    //    qDebug()<<oncogenic_tape[i];
 
+    for (unsigned int i=0;i<mMutationEvents.size();i++)
+        qDebug()<<"Gene: "<<QString::fromStdString(mMutationEvents[i]->mMutationGene->mName)<<" - "<<QString::fromStdString(mMutationEvents[i]->mName);
 }
 
-int MutationTable::getNumberofMutation(unsigned int tbasis)
+void MutationTable::loadSinergyPairs(QString fileName)
 {
+    QFile fileTable(fileName);
+    if(!(fileTable.open(QIODevice::ReadOnly))){
+        qDebug()<<"Error opening the file";
+        return;
+    }
+    qDebug()<<"Loading sinergyTable";
+    for (unsigned int i=0;i<mMutationEvents.size();i++){
+        mMutationEvents[i]->resetSinergyVector(maxIdMutationEvent);
+    }
+    QTextStream fileTextStream(&fileTable);
+    QString tmpTxt;
+    QStringList tmpstringList;
+    unsigned int id_csv_before_gene,id_csv_before_event, id_csv_after_gene, id_csv_after_event, id_csv_sinergy_prol_value,id_csv_sinergy_death_value,id_csv_sinergy_tel_value,id_csv_chain_reaction;
+    int beforeMutEventId, afterMutEventId;
+    bool flag_first_line_read = false;
+    float tmp_prol_sinergy_value,tmp_death_sinergy_value,tmp_tel_sinergy_value;
+    while (true) {
+        if (fileTextStream.atEnd()){
+            break;
+        }
+        tmpTxt = fileTextStream.readLine().toLower();
+        tmpstringList = tmpTxt.replace(',',';').split(';');
+        if(!flag_first_line_read){
+            for(int i=0; i<tmpstringList.size(); i++){
+                if (tmpstringList[i]=="gene_before")
+                    id_csv_before_gene=i;
+                else if (tmpstringList[i]=="event_before")
+                    id_csv_before_event=i;
+                else if (tmpstringList[i]=="gene_after")
+                    id_csv_after_gene=i;
+                else if (tmpstringList[i]=="event_after")
+                    id_csv_after_event=i;
+                else if ((tmpstringList[i]=="promod")||(tmpstringList[i]=="divmod"))
+                    id_csv_sinergy_prol_value=i;
+                else if (tmpstringList[i]=="demod")
+                    id_csv_sinergy_death_value=i;
+                else if ((tmpstringList[i]=="telmod")||(tmpstringList[i]=="maxdivmod"))
+                    id_csv_sinergy_tel_value=i;
+                else if ((tmpstringList[i]=="chain_reaction")||(tmpstringList[i]=="link"))
+                    id_csv_chain_reaction = i;
+            }
+            flag_first_line_read = true;
+            continue;
+        }
+        beforeMutEventId = getEventIdFromFullName(tmpstringList[id_csv_before_gene].toStdString(),tmpstringList[id_csv_before_event].toStdString()  );
+        afterMutEventId = getEventIdFromFullName(tmpstringList[id_csv_after_gene].toStdString(),tmpstringList[id_csv_after_event].toStdString()  );
+        tmp_prol_sinergy_value = tmpstringList[id_csv_sinergy_prol_value].toFloat();
+        tmp_death_sinergy_value = tmpstringList[id_csv_sinergy_death_value].toFloat();
+        tmp_tel_sinergy_value = tmpstringList[id_csv_sinergy_tel_value].toFloat();
+        /*qDebug()<<"trying: "<<tmpstringList[id_csv_before_gene]<<"-"<<tmpstringList[id_csv_before_event]<<
+                  " to "<<tmpstringList[id_csv_after_gene]<<"-"<<tmpstringList[id_csv_after_event];
+        qDebug()<<"IDS: "<<beforeMutEventId<<"  "<<afterMutEventId;*/
+        if ((beforeMutEventId>=0)&&(beforeMutEventId<maxIdMutationEvent)&&(afterMutEventId>=0)&&(afterMutEventId<maxIdMutationEvent)){
+            qDebug()<<"Adding sinergy between "<<beforeMutEventId<<" and "<<afterMutEventId<<": "<<tmp_prol_sinergy_value<<" ; "<<tmp_death_sinergy_value<<" ; "<<tmp_tel_sinergy_value;
+            mMutationEvents[afterMutEventId]->setSinergyValue(beforeMutEventId,tmp_prol_sinergy_value,tmp_death_sinergy_value,tmp_tel_sinergy_value);
+            if ( tmpstringList[id_csv_chain_reaction].toFloat()>0.5 ){
+                qDebug()<<"Adding chainReaction between "<<beforeMutEventId<<" and "<<afterMutEventId;
+                mMutationEvents[beforeMutEventId]->addChainReactionMutationEvent(afterMutEventId);
+            }
+        }
+    }
+    fileTable.close();
+    qDebug()<<"Finished loading sinergyTable";
+}
+
+int MutationTable::getMutGeneIdFromName(std::string tname)
+{
+    int id = -1;
+    for (unsigned int i=0;i<mMutationGenes.size();i++){
+        if ( mMutationGenes[i]->mName == tname ){
+            id = i;
+            break;
+        }
+    }
+    return id;
+}
+
+int MutationTable::getEventIdFromFullName(std::string tGeneName, std::string tEventName)
+{
+    int id = -1;
+    for (unsigned int i=0;i<mMutationEvents.size();i++){
+        if ( mMutationEvents[i]->mName == tEventName ){
+            if (mMutationEvents[i]->mMutationGene != NULL){
+                if((mMutationEvents[i]->mMutationGene->mName == tGeneName)){
+                    id = i;
+                    break;
+                }
+            }
+        }
+    }
+    return id;
+}
+
+
+int MutationTable::getNumberofMutationEvent(unsigned int tbasis)
+{
+    if(tbasis<0)
+        qDebug()<<"ERROR:--------- TBASIS NEGATIVE =====";
     if(tbasis<total_oncogenic_size){
-        if(oncogenic_tape[tbasis]>=2)
-            qDebug()<<"fqfdqwdwq";
         return oncogenic_tape[tbasis];
     }
     return -1;
 }
 
-MutationType MutationTable::getTypeOfMutationGivenAMutation(int tmut)
+int MutationTable::getNumberOfMutationGene(unsigned int tbasis)
 {
-    if ((unsigned int) tmut<mMutations.size()){
-        return mMutations[tmut]->mType;
+    if(tbasis<0)
+        qDebug()<<"ERROR:--------- TBASIS NEGATIVE =====";
+    if(tbasis<total_oncogenic_size){
+        return oncogenic_tape_genes[tbasis];
     }
-    return MutationType::NOMUTATION;
+    return -1;
 }
 
-Mutation *MutationTable::getMutation(int tid) const
+MutationGene *MutationTable::getMutationGene(int tid) const
 {
-    if((unsigned int)tid<mMutations.size())
-        return mMutations[tid];
+    if((unsigned int)tid<mMutationGenes.size())
+        return mMutationGenes[tid];
+    return NULL;
+}
+
+MutationEvent *MutationTable::getMutationEvent(int tid) const
+{
+    if((unsigned int)tid<mMutationEvents.size())
+        return mMutationEvents[tid];
     return NULL;
 }
 
 QStringList MutationTable::getMutationListNames()
 {
     QStringList tmpList;
-    for (unsigned int i=0;i<mMutations.size();i++)
-        tmpList.push_back(QString::fromStdString(mMutations[i]->mName));
+    for (unsigned int i=0;i<mMutationEvents.size();i++)
+        tmpList.push_back(QString::fromStdString(mMutationEvents[i]->mMutationGene->mName)+" - "+QString::fromStdString(mMutationEvents[i]->mName));
     return tmpList;
 }
 
+QStringList MutationTable::getMutationGenesListNames()
+{
+    QStringList tmpList;
+    for (unsigned int i=0;i<mMutationGenes.size();i++)
+        tmpList.push_back(QString::fromStdString(mMutationGenes[i]->mName));
+    return tmpList;
+}
+
+int MutationTable::getGeneOfEvent(int teventId)
+{
+    if((unsigned int)teventId<mMutationEvents.size())
+        return mMutationEvents[teventId]->mMutationGene->mId;
+    return -1;
+}
+/*
 bool MutationTable::checkIfAddMutationArrayOfBool(int tmpMutationId, std::vector<bool> newFirstTapeMutations, std::vector<bool> newSecondTapeMutations, unsigned int tapeChosen)
 {
     if((unsigned int)tmpMutationId>=mMutations.size())
@@ -255,48 +408,207 @@ bool MutationTable::checkIfAddMutation(int tmpMutationId, std::vector<unsigned i
     }
     return false;
 }
+*/
 
-bool MutationTable::checkIfAddMutationByReference(int tmpMutationId, std::vector<unsigned int> &newFirstTapeMutations, std::vector<unsigned int> &newSecondTapeMutations, unsigned int tapeChosen)
+int MutationTable::checkIfAddMutationByReference(int tmpMutationId, std::vector<unsigned int> &newFirstTapeMutations, std::vector<unsigned int> &newSecondTapeMutations, unsigned int tapeChosen)
 {
-    if((unsigned int)tmpMutationId>=mMutations.size())
-        return false;
-    MutationType tmpType = mMutations[tmpMutationId]->mType;
+    if((unsigned int)tmpMutationId>=mMutationGenes.size())
+        return 0;
     if(tapeChosen==1){
         if (Contains(newFirstTapeMutations,(unsigned int)tmpMutationId))
-            return false;
+            return 0;
         else{
             newFirstTapeMutations.push_back(tmpMutationId);
-            if(tmpType==MutationType::ONCOGENE){
-                if(!Contains(newSecondTapeMutations,(unsigned int)tmpMutationId))
-                    return true;
-            } else if (tmpType==MutationType::TUMORSUPPRESSOR){
-                if (Contains(newSecondTapeMutations,(unsigned int)tmpMutationId))
-                    return true;
-            }
+            if(Contains(newSecondTapeMutations,(unsigned int)tmpMutationId))
+                return 2;
+            else
+                return 1;
         }
     }else if(tapeChosen==2){
         if (Contains(newSecondTapeMutations,(unsigned int)tmpMutationId))
-            return false;
+            return 0;
         else{
             newSecondTapeMutations.push_back(tmpMutationId);
-            if(tmpType==MutationType::ONCOGENE){
-                if(!Contains(newFirstTapeMutations,(unsigned int)tmpMutationId))
-                    return true;
-            } else if (tmpType==MutationType::TUMORSUPPRESSOR){
-                if (Contains(newFirstTapeMutations,(unsigned int)tmpMutationId))
-                    return true;
-            }
+            if(Contains(newFirstTapeMutations,(unsigned int)tmpMutationId))
+                return 2;
+            else
+                return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 
 
-float MutationTable::getSynergyOfMutation(int tmpMutationId)
+
+
+float MutationEvent::computeProlSinergyModifier(std::vector<unsigned int> listOfMutations)
 {
-    if((unsigned int)tmpMutationId<mMutations.size())
-        return mMutations[tmpMutationId]->synergy;
-    return 1;
+    float modifier=1;
+    for (unsigned int i=0; i<listOfMutations.size(); i++){
+        modifier*= sinergyProlValues[listOfMutations[i]];
+    }
+    return modifier;
 }
 
+float MutationEvent::computeProlSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape)
+{
+    float modifier=1;
+    for (unsigned int i=0; i<tFirstTape.size(); i++){
+        modifier*= sinergyProlValues[tFirstTape[i]];
+    }
+    for (unsigned int i=0; i<tSecondTape.size(); i++){
+        if (!Contains(tFirstTape,tSecondTape[i]))
+            modifier*= sinergyProlValues[tSecondTape[i]];
+    }
+    return modifier;
+}
+
+float MutationEvent::computeDeathSinergyModifier(std::vector<unsigned int> listOfMutations)
+{
+    float modifier=1;
+    for (unsigned int i=0; i<listOfMutations.size(); i++){
+        modifier*= sinergyDeathValues[listOfMutations[i]];
+    }
+    return modifier;
+}
+
+float MutationEvent::computeDeathSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape)
+{
+    float modifier=1;
+    for (unsigned int i=0; i<tFirstTape.size(); i++){
+        modifier*= sinergyDeathValues[tFirstTape[i]];
+    }
+    for (unsigned int i=0; i<tSecondTape.size(); i++){
+        if (!Contains(tFirstTape,tSecondTape[i]))
+            modifier*= sinergyDeathValues[tSecondTape[i]];
+    }
+    return modifier;
+}
+
+float MutationEvent::computeTelSinergyModifier(std::vector<unsigned int> listOfMutations)
+{
+    float modifier=1;
+    for (unsigned int i=0; i<listOfMutations.size(); i++){
+        modifier*= sinergyTelValues[listOfMutations[i]];
+    }
+    return modifier;
+}
+
+float MutationEvent::computeTelSinergyModifier(std::vector<unsigned int> tFirstTape,std::vector<unsigned int> tSecondTape)
+{
+    float modifier=1;
+    for (unsigned int i=0; i<tFirstTape.size(); i++){
+        modifier*= sinergyTelValues[tFirstTape[i]];
+    }
+    for (unsigned int i=0; i<tSecondTape.size(); i++){
+        if (!Contains(tFirstTape,tSecondTape[i]))
+            modifier*= sinergyTelValues[tSecondTape[i]];
+    }
+    return modifier;
+}
+
+
+float MutationEvent::computeNewProlRate(float celProlRate, float sinergyModifier, int activationLevel)
+{
+    float newProlRate;
+    if (activationLevel==1)
+        newProlRate = (prolRate-1)*dominance+1;
+    else if (activationLevel==2)
+        newProlRate = (prolRate-1)*(1-dominance)+1;
+    else if (activationLevel==3)
+        newProlRate = prolRate;
+    else
+        return celProlRate;
+
+    if (prolModifierType == ModifierType::ADD){
+        newProlRate = ((newProlRate-1)*sinergyModifier + 1) + (celProlRate-1);
+    } else if (prolModifierType == ModifierType::MULT){
+        newProlRate = ((newProlRate-1)*sinergyModifier + 1) * celProlRate;
+    }else
+        newProlRate = celProlRate;
+
+    /*if (sinergyModifier>1){
+        qDebug()<<"sinergyModifier: "<<sinergyModifier;
+        qDebug()<<"celProlRate: "<<celProlRate;
+        qDebug()<<"resulting prol rate: "<<newProlRate;
+    }*/
+
+
+    return newProlRate;
+}
+
+float MutationEvent::computeNewDeathRate(float celDeathRate, float sinergyModifier, int activationLevel)
+{
+    float newDeathRate;
+
+    if (activationLevel==1)
+        newDeathRate = (deathRate-1)*dominance+1;
+    else if (activationLevel==2)
+        newDeathRate = (deathRate-1)*(1-dominance)+1;
+    else if (activationLevel==3)
+        newDeathRate = deathRate;
+    else
+        return celDeathRate;
+
+
+    if (deathModifierType == ModifierType::ADD){
+        newDeathRate = ((newDeathRate-1)*sinergyModifier+1) + (celDeathRate-1);
+    } else if (deathModifierType == ModifierType::MULT){
+        newDeathRate = ((newDeathRate-1)*sinergyModifier+1) * celDeathRate;
+    }else
+        newDeathRate = celDeathRate;
+
+
+    return newDeathRate;
+}
+
+float MutationEvent::computeNewMoreMutRate(float celMoreMutRate, float sinergyModifier)
+{
+    float newMoreMutRate = moreMutRateMutations;
+
+    if (moreMutModifierType == ModifierType::ADD){
+        newMoreMutRate = ((newMoreMutRate-1)*sinergyModifier+1) + (celMoreMutRate-1);
+    } else if (moreMutModifierType == ModifierType::MULT){
+        newMoreMutRate = ((newMoreMutRate-1)*sinergyModifier+1) * celMoreMutRate;
+    }else
+        newMoreMutRate = celMoreMutRate;
+
+    return newMoreMutRate;
+}
+
+float MutationEvent::computeNewTelomeresRate(float celTelomeresRate, float sinergyModifier, int activationLevel)
+{
+    float newTelomeresRate;
+
+    if (activationLevel==1)
+        newTelomeresRate = (telomeresRate-1)*dominance +1;
+    else if (activationLevel==2)
+        newTelomeresRate = (telomeresRate-1)*(1-dominance) +1;
+    else if (activationLevel==3)
+        newTelomeresRate = telomeresRate;
+    else
+        return celTelomeresRate;
+
+    if (telomeresModifierType == ModifierType::ADD){
+        newTelomeresRate = ((newTelomeresRate-1)*sinergyModifier+1) + (celTelomeresRate-1);
+    } else if (telomeresModifierType == ModifierType::MULT){
+        newTelomeresRate = ((newTelomeresRate-1)*sinergyModifier+1) * celTelomeresRate;
+    }else
+        newTelomeresRate = celTelomeresRate;
+
+    return newTelomeresRate;
+}
+
+float MutationEvent::computeNewMicroEnvironmentModifier(float curMicroEnvironment,int activationLevel)
+{
+    float microEnvironModifier=1;
+    if (activationLevel==1)
+        microEnvironModifier = (microEnvironment-1)*dominance +1;
+    else if (activationLevel==2)
+        microEnvironModifier = (microEnvironment-1)*(1-dominance) +1;
+    else if (activationLevel==3)
+        microEnvironModifier = microEnvironment;
+
+    return microEnvironModifier*curMicroEnvironment;
+}

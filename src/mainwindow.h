@@ -22,7 +22,6 @@ private:
     Ui::MainWindow *ui;
     CellSystem *mySystem;
     SimulationThread *mSimulationThread;
-    QTimer *startSimulationTimer;
 
     //Automatics
     unsigned int parameterToIterate;
@@ -33,10 +32,11 @@ public slots:
     void loadConfigFile();
 
     void loadMutationTable();
+    void loadSinergyTable();
     void startSimulation();
     void forceStop();
-    void setTextStartSimulationLabel();
 
+    void changeMicroAmbient(bool state);
     //Manual Mutations
     void addMutationManualToTable();
     void editMutationManualFromTable();
@@ -46,6 +46,7 @@ public slots:
     //Automatic Runs
     void startAutomaticRuns();
     void nextAutomatic();
+
 };
 
 #endif // MAINWINDOW_H

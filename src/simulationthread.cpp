@@ -19,8 +19,9 @@ void SimulationThread::run()
         if(!myCellSystem->process())
             break;
     qDebug()<<"Finished: "<<mTime.elapsed()<<"ms";
-    if (outputFilesMode==1)
+    if (outputFilesMode==1){
         myCellSystem->exportInfo(exportingFileName);
+    }
     else if (outputFilesMode==2)
         myCellSystem->exportLastLine(exportingAutorunFileName);
     else if (outputFilesMode==3){

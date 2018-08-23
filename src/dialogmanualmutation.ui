@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>325</width>
-    <height>158</height>
+    <height>173</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,22 +57,22 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Mutation Name</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="comboBoxMutationName"/>
-     </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="spinMutationPercentage">
        <property name="maximum">
         <number>100</number>
        </property>
       </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Gene-Event Name</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="comboBoxMutationFullName"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_5">

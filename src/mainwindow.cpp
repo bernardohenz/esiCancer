@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->LoadTableButton,SIGNAL(pressed()),this,SLOT(loadMutationTable()));
+    connect(ui->LoadSinergyButton,SIGNAL(pressed()),this,SLOT(loadSinergyTable()));
     connect(ui->startSimulationButton,SIGNAL(pressed()),this,SLOT(startSimulation()));
     connect(ui->forceStopButton,SIGNAL(pressed()),this,SLOT(forceStop()));
     connect(ui->runAutomaticsButton,SIGNAL(pressed()),this,SLOT(startAutomaticRuns()));
@@ -24,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->editRuleButton,SIGNAL(pressed()),this,SLOT(editMutationManualFromTable()));
     connect(ui->deleteRuleButton,SIGNAL(pressed()),this,SLOT(deleteMutationTableCurrentRule()));
     connect(ui->clearAllMutationManual,SIGNAL(pressed()),this,SLOT(clearAllMutationsRules()));
+    connect(ui->stdGrowthRateCheckBox,SIGNAL(toggled(bool)),this,SLOT(changeMicroAmbient(bool)));
 
 
     mySystem = new CellSystem();
@@ -31,8 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
     mSimulationThread->registerCellSystem(mySystem);
     connect(mSimulationThread,SIGNAL(finished()),this,SLOT(nextAutomatic()));
     runningAutomaticsBool = false;
-    startSimulationTimer = new QTimer(this);
-    connect(startSimulationTimer, SIGNAL(timeout()), this, SLOT(setTextStartSimulationLabel()));
     loadConfigFile();
 }
 
@@ -191,6 +191,15 @@ void MainWindow::loadMutationTable()
         ui->tableMutationsManual->setEnabled(true);*/
         qDebug()<<"Loaded Mutation Table";
         ui->frame_ManualMutations->setEnabled(true);
+        ui->LoadSinergyButton->setEnabled(true);
+    }
+}
+
+void MainWindow::loadSinergyTable()
+{
+    QString filename = QFileDialog::getOpenFileName(this,"Open mutation table ...");
+    if(!filename.isEmpty()){
+        mySystem->loadSinergyTableFile(filename);
     }
 }
 
@@ -200,36 +209,40 @@ void MainWindow::startSimulation()
     mySystem->loadDefaultValues(ui->probProlSpin->value(),ui->probDeathSpin->value(),ui->maxDivisionsSpin->value(),ui->mutationsPerDivisionSpin->value());
     mySystem->loadSimulationParameters(ui->seedSpin->value(),ui->numberOfCellsSpin->value());
     mySystem->loadStopConditions(ui->numberOfGenerationsStopSpin->value(),ui->numberOfCellsStopSpin->value(),ui->mutatedCellsStopSpin->value());
+    if (ui->stdGrowthRateCheckBox->checkState()){
+        mySystem->setStdGrowthRate(ui->stdGrowthRateSpin->value());
+    }else{
+        mySystem->setStdGrowthRate(-1);
+    }
     mySystem->startSimulation();
-    mSimulationThread->setExportingFilename("output");
+    mSimulationThread->setExportingFilename("tmp");
     mSimulationThread->setOutputFilesMode(1);
     mSimulationThread->start();
-    ui->start_simulation_label_finished->setText("Exported files to output_.csv");
-
-    startSimulationTimer->start(1000);
     //for(int i=0;i<500;i++)
     //    mySystem->process();
 }
 
 void MainWindow::forceStop()
 {
+    runningAutomaticsBool = false;
     mSimulationThread->terminate();
 }
 
-void MainWindow::setTextStartSimulationLabel()
+void MainWindow::changeMicroAmbient(bool state)
 {
-    ui->start_simulation_label_finished->setText("");
+    ui->stdGrowthRateLabel->setEnabled(state);
+    ui->stdGrowthRateSpin->setEnabled(state);
 }
 
 void MainWindow::addMutationManualToTable()
 {
     DialogManualMutation tmp(this,mySystem->getMutationListNames());
     if(tmp.exec()==QDialog::Accepted) {
-        qDebug()<<"ALOHA";
+        //qDebug()<<"ALOHA";
         ui->tableMutationsManual->setRowCount(ui->tableMutationsManual->rowCount()+1);
         ui->tableMutationsManual->setItem(ui->tableMutationsManual->rowCount()-1,0,new QTableWidgetItem(QString::number(tmp.getGeneration())));
         ui->tableMutationsManual->setItem(ui->tableMutationsManual->rowCount()-1,1,new QTableWidgetItem(QString::number(tmp.getPercentage())));
-        ui->tableMutationsManual->setItem(ui->tableMutationsManual->rowCount()-1,2,new QTableWidgetItem(tmp.getMutationName()));
+        ui->tableMutationsManual->setItem(ui->tableMutationsManual->rowCount()-1,2,new QTableWidgetItem(tmp.getMutationFullName()));
         if (tmp.getAllelsChanged()==MONOALLELIC){
             ui->tableMutationsManual->setItem(ui->tableMutationsManual->rowCount()-1,3,new QTableWidgetItem("Monoallelic"));
         } else{
@@ -237,7 +250,8 @@ void MainWindow::addMutationManualToTable()
         }
 
         ui->tableMutationsManual->resizeColumnsToContents();
-        mySystem->addMutationRule(new MutationManual(tmp.getGeneration(),tmp.getPercentage(),tmp.getIndex(),tmp.getMutationName(),tmp.getAllelsChanged()));
+        qDebug()<<"Before addMutationRule";
+        mySystem->addMutationRule(new MutationManual(tmp.getGeneration(),tmp.getPercentage(),tmp.getIndex(),tmp.getMutationFullName(),tmp.getAllelsChanged()));
     }
 }
 
@@ -247,18 +261,21 @@ void MainWindow::editMutationManualFromTable()
         return;
     DialogManualMutation tmp(this,mySystem->getMutationListNames());
     MutationManual *tmpmutation = mySystem->getMutationManualFromIndex(ui->tableMutationsManual->currentRow());
-    tmp.setValues(tmpmutation->getGeneration(),tmpmutation->getPercentage(),tmpmutation->getMutationId(),tmpmutation->getMutationAllelsChanged());
+    qDebug()<<"Before setvalues";
+    tmp.setValues(tmpmutation->getGeneration(),tmpmutation->getPercentage(),tmpmutation->getMutationEventId(),tmpmutation->getMutationAllelsChanged());
+    qDebug()<<"Before update";
     if(tmp.exec()==QDialog::Accepted) {
         ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),0,new QTableWidgetItem(QString::number(tmp.getGeneration())));
         ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),1,new QTableWidgetItem(QString::number(tmp.getPercentage())));
-        ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),2,new QTableWidgetItem(tmp.getMutationName()));
+        ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),2,new QTableWidgetItem(tmp.getMutationFullName()));
         if (tmp.getAllelsChanged()==MONOALLELIC){
             ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),3,new QTableWidgetItem("Monoallelic"));
         } else{
             ui->tableMutationsManual->setItem(ui->tableMutationsManual->currentRow(),3,new QTableWidgetItem("Biallelic"));
         }
         //ui->tableMutationsManual->resizeColumnsToContents();
-        mySystem->updateMutationRule(ui->tableMutationsManual->currentRow(),tmp.getGeneration(),tmp.getPercentage(),tmp.getMutationName(),tmp.getIndex(),tmp.getAllelsChanged());
+        qDebug()<<"Before update";
+        mySystem->updateMutationRule(ui->tableMutationsManual->currentRow(),tmp.getGeneration(),tmp.getPercentage(),tmp.getMutationFullName(),tmp.getIndex(),tmp.getAllelsChanged());
     }
 }
 
@@ -300,12 +317,16 @@ void MainWindow::nextAutomatic()
     mySystem->loadDefaultValues(ui->probProlSpin->value(),ui->probDeathSpin->value(),ui->maxDivisionsSpin->value(),ui->mutationsPerDivisionSpin->value());
     mySystem->loadSimulationParameters(parameterToIterate,ui->numberOfCellsSpin->value());
     mySystem->loadStopConditions(ui->numberOfGenerationsStopSpin->value(),ui->numberOfCellsStopSpin->value(),ui->mutatedCellsStopSpin->value());
+    if (ui->stdGrowthRateCheckBox->checkState()){
+        mySystem->setStdGrowthRate(ui->stdGrowthRateSpin->value());
+    }else{
+        mySystem->setStdGrowthRate(-1);
+    }
     mySystem->startSimulation();
     mSimulationThread->setExportingFilename(automaticsFilename+"_seed"+QString::number(parameterToIterate));
     mSimulationThread->setExportingAutorunFilename(automaticsFilename+"_automatics");
     mSimulationThread->setOutputFilesMode(ui->comboBoxOutputFiles->currentIndex()+1);
     mSimulationThread->start();
-
 
     int tmpProgress = 100*(parameterToIterate - ui->minValueAutomaticSpin->value())/(1+ui->maxValueAutomaticSpin->value() - ui->minValueAutomaticSpin->value());
     ui->automaticsProgressBar->setValue(tmpProgress);

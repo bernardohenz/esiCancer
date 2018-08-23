@@ -1,0 +1,9 @@
+Gene_Before,Event_Before,Gene_After,Event_After,DIVMOD,DEMOD,MAXDIVMOD,Chain_Reaction
+gene1,event1,gene2,event1,0,0,0,0
+gene2,event1,gene3,event1,0,0,0,0
+gene1,event1,gene5,event1,5,1,1,0
+gene3,event2,gene5,event1,3,1,1,0
+gene3,event1,gene4,event1,10,1,1,0
+deletion,event,gene6,event1,1,1,1,1
+deletion,event,gene7,event1,1,1,1,1
+deletion,event,gene8,event1,1,1,1,1
