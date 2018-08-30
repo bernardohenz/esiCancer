@@ -8,18 +8,18 @@ Guido Lenz
 
 ### What is esiCancer?
 
-esiCancer is a cell-autonomous software tool to model evolution of cancer. This program uses real genomic information of tumors to construct a biallelic genome and applies stochastic events, such as mutations, indels and other alterations to this genome. Each event can produce several alterations to the probability of division, death, event rate per division, and/or maximal divisions, which impact the population of cells over the time.
+esiCancer is a cell-autonomous software tool to model evolution of cancer. This program uses real genomic information of tumors to construct a biallelic genome and applies stochastic events, such as mutations, indels and other alterations to this genome. Each event can produce several alterations to the probability of division, death, event rate per division, and/or maximal divisions, which impact the population of cells over time.
 
 esiCancer has a user friendly interface and produces .cvs outputs that can be easily analyzed by computer professionals or amateurs alike.
 
 
 ### Compiling the code
-Source code is written in C++, using Qt library for interface design. For compiling the code you will need to: (1) having a compiler installed (we suggest GCC or MinGW, but any compiler should work fine); (2) having the QT library, which can be download on [QT website](https://www.qt.io/download/). We strongly recommend the use of QtCreator (installed with QT), as we provide the .pro project file. Any problem compiling the code, please let me know.
+Source code is written in C++, using Qt library for interface design. For compiling the code you will need to: (1) have a compiler installed (we suggest GCC or MinGW, but any compiler should work fine); (2) have the QT library, which can be downloaded from the [QT website](https://www.qt.io/download/). We strongly recommend the use of QtCreator (installed with QT), as we provide the .pro project file. Any problem compiling the code, please let me know.
 
 
 ### Start simulating clonal evolution
 In the esiCancer interface, set the parameters and load the esiTable.csv. By clicking in Automatic Runs, the program will simulate several runs (according to the values on the spinners), generating output files. By modifying the parameters, you can test
-different hypothesis, checking the outcome in no time.
+different hypothesis, checking the outcome quickly.
 
 ### Parameters
 The parameters are described next:
@@ -54,7 +54,7 @@ The esiTable parameters are described next:
 |genome size | Genome Size | Sum of the oncogenome and the normal genome |
 |GENES | Gene Name | Name of a given gene |
 |EVENTS| Evet Name | Name of a given event |
-|PROBEVENT| Probability of Event | Probability of a specific event occurs (Prob = PROBEVENT / genome size) |
+|PROBEVENT| Probability of Event | Probability of a specific event to occur (Prob = PROBEVENT / genome size) |
 |DOMINANCE| Dominance | Determines the impact of a specific event if it occurs in one allele. |
 |DIVFUNC| Function for division rate | Determines if the event adds or multiplies a specific value to its division rate. |
 |DIVRATE| Division Rate | Determines the impact of a specific event on division rate. |
@@ -72,14 +72,14 @@ The interactionTable  parameters are described next:
 
 |   | **Parameter Meaning** | **Action** |  
 | --- | --- | --- |
-|Gene_Before | Gene Name | Defines the gene name previously affected. |
-|Event_Before | Event Name | Defines the event name previously affected. |
-|Gene_After| Gene Name | Defines the gene name future affected. |
-|Event_After| Event Name | Defines the event name future affected. |
+|Gene_Before | Gene Name | Defines the gene name affected first. |
+|Event_Before | Event Name | Defines the event name affected first. |
+|Gene_After| Gene Name | Defines the gene name affected after the first. |
+|Event_After| Event Name | Defines the event name affected after the first. |
 |DIVMOD| Division rate modifier | Determines the impact of interaction on division rate. |
 |DEMOD| Death rate modifier | Determines the impact of interaction on death rate. |
 |MAXDIVMOD| Maximum division rate modifier | Determines the impact of interaction on maximum division rate. |
-|Link| Gene-Event Link | Determines if an event affect more than one gene (1 = affect; 0 = not affect). |
+|Link| Gene-Event Link | Determines if an event affects more than one gene (1 = affect; 0 = does not affect). |
 
 
 ### Output Files
@@ -99,3 +99,5 @@ When simulating different runs on *Automatic Runs*, our program generates output
 
 ### Running into issues?
 Contact Bernardo Henz <bernardohenz@gmail.com>
+
+Other informations can be obtained from [www.ufrgs.br/labsinal/esiCancer](https://www.ufrgs.br/labsinal/esiCancer).
