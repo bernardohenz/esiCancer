@@ -52,6 +52,7 @@ private:
 
     //Log Information
     std::vector<unsigned int> populationHistory;
+    unsigned int totalNumberOfEvents;
     //Mutations
     std::vector<unsigned int> historyNumberOfAffectedCells;
     std::vector<MutationHistogram> historyMutationGeneHistogram;
@@ -64,6 +65,7 @@ private:
     std::vector<MutationCounter> historyFirstTapeEventCounters;
     std::vector<MutationCounter> historySecondTapeEventCounters;
     std::vector<AncestorHistogram> historyAncestorsCounters;
+
 
     //Stop Conditions
     int stopGenerations;

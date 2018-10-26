@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->LoadTableButton,SIGNAL(pressed()),this,SLOT(loadMutationTable()));
     connect(ui->LoadSinergyButton,SIGNAL(pressed()),this,SLOT(loadSinergyTable()));
-    connect(ui->startSimulationButton,SIGNAL(pressed()),this,SLOT(startSimulation()));
+    //connect(ui->startSimulationButton,SIGNAL(pressed()),this,SLOT(startSimulation()));
     connect(ui->forceStopButton,SIGNAL(pressed()),this,SLOT(forceStop()));
     connect(ui->runAutomaticsButton,SIGNAL(pressed()),this,SLOT(startAutomaticRuns()));
 
@@ -34,6 +34,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(mSimulationThread,SIGNAL(finished()),this,SLOT(nextAutomatic()));
     runningAutomaticsBool = false;
     loadConfigFile();
+    ui->label_forceStop->setStyleSheet("QLabel { color : red; }");
+    ui->label_forceStop->setVisible(false);
+
+    //Hidding parameter to iterate
+    ui->label_14->setVisible(false);
+    ui->comboBoxParameterToIterate->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -205,9 +211,13 @@ void MainWindow::loadSinergyTable()
 
 void MainWindow::startSimulation()
 {
+    QString output_Filename = QFileDialog::getSaveFileName(this,"Exporting path");
+    if(output_Filename=="")
+        return;
     runningAutomaticsBool = false;
     mySystem->loadDefaultValues(ui->probProlSpin->value(),ui->probDeathSpin->value(),ui->maxDivisionsSpin->value(),ui->mutationsPerDivisionSpin->value());
-    mySystem->loadSimulationParameters(ui->seedSpin->value(),ui->numberOfCellsSpin->value());
+    //mySystem->loadSimulationParameters(ui->seedSpin->value(),ui->numberOfCellsSpin->value()); //seedSpin Removed
+    mySystem->loadSimulationParameters(13,ui->numberOfCellsSpin->value());
     mySystem->loadStopConditions(ui->numberOfGenerationsStopSpin->value(),ui->numberOfCellsStopSpin->value(),ui->mutatedCellsStopSpin->value());
     if (ui->stdGrowthRateCheckBox->checkState()){
         mySystem->setStdGrowthRate(ui->stdGrowthRateSpin->value());
@@ -215,7 +225,7 @@ void MainWindow::startSimulation()
         mySystem->setStdGrowthRate(-1);
     }
     mySystem->startSimulation();
-    mSimulationThread->setExportingFilename("tmp");
+    mSimulationThread->setExportingFilename(output_Filename);
     mSimulationThread->setOutputFilesMode(1);
     mSimulationThread->start();
     //for(int i=0;i<500;i++)
@@ -224,12 +234,18 @@ void MainWindow::startSimulation()
 
 void MainWindow::forceStop()
 {
+    if(mSimulationThread->isRunning()){
+        ui->label_forceStop->setVisible(true);
+        QTimer::singleShot(2000, this, SLOT(setStopLabelFalse()));
+    }
     runningAutomaticsBool = false;
-    mSimulationThread->terminate();
+    //mSimulationThread->terminate();
+    mSimulationThread->exit();
 }
 
 void MainWindow::changeMicroAmbient(bool state)
 {
+
     ui->stdGrowthRateLabel->setEnabled(state);
     ui->stdGrowthRateSpin->setEnabled(state);
 }
@@ -332,4 +348,9 @@ void MainWindow::nextAutomatic()
     ui->automaticsProgressBar->setValue(tmpProgress);
 
     parameterToIterate+=ui->incrementAutomaticSpin_2->value();
+}
+
+void MainWindow::setStopLabelFalse()
+{
+    ui->label_forceStop->setVisible(false);
 }

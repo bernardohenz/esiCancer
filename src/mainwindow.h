@@ -47,6 +47,8 @@ public slots:
     void startAutomaticRuns();
     void nextAutomatic();
 
+    void setStopLabelFalse();
+
 };
 
 #endif // MAINWINDOW_H

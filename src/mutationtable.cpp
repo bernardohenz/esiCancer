@@ -183,6 +183,7 @@ void MutationTable::loadMutations(QString fileName)
     qDebug()<<"Number of mutations: "<<mMutationEvents.size();
     qDebug()<<"genome: "<<genome_size;
     qDebug()<<"oncogenic_size: "<<total_oncogenic_size;
+
     //for (unsigned int i=0;i<total_oncogenic_size;i++)
     //    qDebug()<<oncogenic_tape[i];
 
@@ -512,19 +513,24 @@ float MutationEvent::computeTelSinergyModifier(std::vector<unsigned int> tFirstT
 float MutationEvent::computeNewProlRate(float celProlRate, float sinergyModifier, int activationLevel)
 {
     float newProlRate;
+    float normalizingFactor;
+    if (prolModifierType == ModifierType::ADD)
+        normalizingFactor=0;
+    else
+        normalizingFactor=1;
+
     if (activationLevel==1)
-        newProlRate = (prolRate-1)*dominance+1;
+        newProlRate = (prolRate-normalizingFactor)*dominance+normalizingFactor;
     else if (activationLevel==2)
-        newProlRate = (prolRate-1)*(1-dominance)+1;
+        newProlRate = (prolRate-normalizingFactor)*(1-dominance)+normalizingFactor;
     else if (activationLevel==3)
         newProlRate = prolRate;
     else
         return celProlRate;
-
     if (prolModifierType == ModifierType::ADD){
-        newProlRate = ((newProlRate-1)*sinergyModifier + 1) + (celProlRate-1);
+        newProlRate = ((newProlRate-normalizingFactor)*sinergyModifier + normalizingFactor) + (celProlRate);
     } else if (prolModifierType == ModifierType::MULT){
-        newProlRate = ((newProlRate-1)*sinergyModifier + 1) * celProlRate;
+        newProlRate = ((newProlRate-normalizingFactor)*sinergyModifier + normalizingFactor) * celProlRate;
     }else
         newProlRate = celProlRate;
 
@@ -534,18 +540,22 @@ float MutationEvent::computeNewProlRate(float celProlRate, float sinergyModifier
         qDebug()<<"resulting prol rate: "<<newProlRate;
     }*/
 
-
     return newProlRate;
 }
 
 float MutationEvent::computeNewDeathRate(float celDeathRate, float sinergyModifier, int activationLevel)
 {
     float newDeathRate;
+    float normalizingFactor;
+    if (prolModifierType == ModifierType::ADD)
+        normalizingFactor=0;
+    else
+        normalizingFactor=1;
 
     if (activationLevel==1)
-        newDeathRate = (deathRate-1)*dominance+1;
+        newDeathRate = (deathRate-normalizingFactor)*dominance+normalizingFactor;
     else if (activationLevel==2)
-        newDeathRate = (deathRate-1)*(1-dominance)+1;
+        newDeathRate = (deathRate-normalizingFactor)*(1-dominance)+normalizingFactor;
     else if (activationLevel==3)
         newDeathRate = deathRate;
     else
@@ -553,9 +563,9 @@ float MutationEvent::computeNewDeathRate(float celDeathRate, float sinergyModifi
 
 
     if (deathModifierType == ModifierType::ADD){
-        newDeathRate = ((newDeathRate-1)*sinergyModifier+1) + (celDeathRate-1);
+        newDeathRate = ((newDeathRate-normalizingFactor)*sinergyModifier+normalizingFactor) + (celDeathRate);
     } else if (deathModifierType == ModifierType::MULT){
-        newDeathRate = ((newDeathRate-1)*sinergyModifier+1) * celDeathRate;
+        newDeathRate = ((newDeathRate-normalizingFactor)*sinergyModifier+normalizingFactor) * celDeathRate;
     }else
         newDeathRate = celDeathRate;
 
@@ -566,11 +576,16 @@ float MutationEvent::computeNewDeathRate(float celDeathRate, float sinergyModifi
 float MutationEvent::computeNewMoreMutRate(float celMoreMutRate, float sinergyModifier)
 {
     float newMoreMutRate = moreMutRateMutations;
+    float normalizingFactor;
+    if (prolModifierType == ModifierType::ADD)
+        normalizingFactor=0;
+    else
+        normalizingFactor=1;
 
     if (moreMutModifierType == ModifierType::ADD){
-        newMoreMutRate = ((newMoreMutRate-1)*sinergyModifier+1) + (celMoreMutRate-1);
+        newMoreMutRate = ((newMoreMutRate-normalizingFactor)*sinergyModifier+normalizingFactor) + (celMoreMutRate);
     } else if (moreMutModifierType == ModifierType::MULT){
-        newMoreMutRate = ((newMoreMutRate-1)*sinergyModifier+1) * celMoreMutRate;
+        newMoreMutRate = ((newMoreMutRate-normalizingFactor)*sinergyModifier+normalizingFactor) * celMoreMutRate;
     }else
         newMoreMutRate = celMoreMutRate;
 
@@ -580,20 +595,25 @@ float MutationEvent::computeNewMoreMutRate(float celMoreMutRate, float sinergyMo
 float MutationEvent::computeNewTelomeresRate(float celTelomeresRate, float sinergyModifier, int activationLevel)
 {
     float newTelomeresRate;
+    float normalizingFactor;
+    if (prolModifierType == ModifierType::ADD)
+        normalizingFactor=0;
+    else
+        normalizingFactor=1;
 
     if (activationLevel==1)
-        newTelomeresRate = (telomeresRate-1)*dominance +1;
+        newTelomeresRate = (telomeresRate-normalizingFactor)*dominance +normalizingFactor;
     else if (activationLevel==2)
-        newTelomeresRate = (telomeresRate-1)*(1-dominance) +1;
+        newTelomeresRate = (telomeresRate-normalizingFactor)*(1-dominance) +normalizingFactor;
     else if (activationLevel==3)
         newTelomeresRate = telomeresRate;
     else
         return celTelomeresRate;
 
     if (telomeresModifierType == ModifierType::ADD){
-        newTelomeresRate = ((newTelomeresRate-1)*sinergyModifier+1) + (celTelomeresRate-1);
+        newTelomeresRate = ((newTelomeresRate-normalizingFactor)*sinergyModifier+normalizingFactor) + (celTelomeresRate);
     } else if (telomeresModifierType == ModifierType::MULT){
-        newTelomeresRate = ((newTelomeresRate-1)*sinergyModifier+1) * celTelomeresRate;
+        newTelomeresRate = ((newTelomeresRate-normalizingFactor)*sinergyModifier+normalizingFactor) * celTelomeresRate;
     }else
         newTelomeresRate = celTelomeresRate;
 

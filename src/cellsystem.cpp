@@ -109,6 +109,7 @@ void CellSystem::reset()
     probabilityDistribution.reset();
 
     //log containers
+    totalNumberOfEvents=0;
     populationHistory.clear();
 
 
@@ -236,6 +237,7 @@ Cell *CellSystem::addNewCell(Cell *father){
 //            qDebug()<<"   Mut "<<newMutations[i];
 //    }
     for(unsigned int i=0; i<tmpMutationsPerRepFather; i++){
+        totalNumberOfEvents++;
         //get a random basis position
         tmpMutatedPosition = getRandomInteger();
 
@@ -357,7 +359,7 @@ bool CellSystem::process()
     std::vector<unsigned int> tmpMuts, tmpTape;
     int affectedCells=0;
 
-    historyMutationGeneHistogram.push_back(MutationHistogram(myMutationTable->getMaxIdMutationGene()));
+    historyMutationGeneHistogram.push_back(MutationHistogram(myMutationTable->getMaxIdMutationGene()+1));
     historyMutationGeneCounters.push_back(MutationCounter(myMutationTable->getMaxIdMutationGene()));
     historyFirstTapeGeneCounters.push_back(MutationCounter(myMutationTable->getMaxIdMutationGene()));
     historySecondTapeGeneCounters.push_back(MutationCounter(myMutationTable->getMaxIdMutationGene()));

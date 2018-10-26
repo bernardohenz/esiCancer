@@ -96,6 +96,8 @@ When simulating different runs on *Automatic Runs*, our program generates output
 | \_automatics\_genesMutationResults.csv | Returns the number of cells affected on each gene in one or two alleles in the final population for each seed.|
 | \_automatics\_sequenceEachCell.csv | Returns the single cell genes in the two alleles as two independent lists in a binary form (1 = affected; 0 = not affected). |
 
+### Documentation
+We haven't created a documentation for all classes and fucntions of the code, but a friendly documentation can be found [here](./esiCancerDocumentation.pdf).
 
 ### Running into issues?
 Contact Bernardo Henz <bernardohenz@gmail.com>
